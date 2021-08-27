@@ -1,4 +1,4 @@
-export const dummyProducts = [
+export const DUMMY_PRODUCTS = [
   {
     id: 1,
     price: 6,
