@@ -1,10 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialStateCart = {
-  items: [{ title: 'Test', quantity: 5, total: 24, price: 6 }],
+  items: [],
   totalAmount: 0,
-  showCart: true,
-  id: 100,
 };
 
 const cartSlice = createSlice({
@@ -12,50 +10,41 @@ const cartSlice = createSlice({
   initialState: initialStateCart,
   reducers: {
     addItemToCart(state, action) {
-      // action.payload.item will be item object
-
-      state.totalAmount = state.totalAmount + action.payload.item.total;
-
+      const newItem = action.payload;
       // check to see if item exists in cart already
-      const existingCartItemIndex = state.items.findIndex(
-        (item) => item.id === action.payload.item.id
-      );
-      const existingCartItem = state.items[existingCartItemIndex];
-
-      if (existingCartItem) {
-        const updatedItem = {
-          ...existingCartItem,
-          quantity: existingCartItem.quantity + action.payload.item.quantity,
-        };
-        state.items[existingCartItemIndex] = updatedItem;
-        // const updatedItems = [...state.items];
-        // updatedItems[existingCartItemIndex] = updatedItem;
+      const existingItem = state.items.find((item) => item.id === newItem.id);
+      if (!existingItem) {
+        state.items.push({
+          id: newItem.id,
+          price: newItem.price,
+          quantity: 1,
+          totalPrice: newItem.price,
+          title: newItem.title,
+        });
+        state.totalAmount = state.totalAmount + newItem.price;
       } else {
-        state.items = state.items.concat(action.payload.item);
+        existingItem.quantity++;
+        existingItem.totalPrice = existingItem.totalPrice + newItem.price;
+        state.totalAmount = state.totalAmount + newItem.price;
       }
     },
 
     removeItemFromCart(state, action) {
-      const existingCartItemIndex = state.items.find(
-        (item) => item.id === action.payload.item.id
-      );
-      const existingCartItem = state.items[existingCartItemIndex];
-      let updatedItems;
-      if (existingCartItem.quantity === 1) {
-        updatedItems = state.items.filter(
-          (item) => item.id !== action.payload.item.id
-        );
+      const id = action.payload;
+      const existingItemIndex = state.items.findIndex((item) => item.id === id);
+      const existingItem = state.items[existingItemIndex];
+      if (existingItem.quantity === 1) {
+        state.items = state.items.filter((item) => item.id !== id);
       } else {
-        const updatedItem = {
-          ...existingCartItem,
-          quantity: existingCartItem.quantity - 1,
+        state.items[existingItemIndex] = {
+          ...existingItem,
+          quantity: existingItem.quantity - 1,
+          totalPrice: existingItem.totalPrice - existingItem.price,
         };
-        updatedItems = [...state.items];
-        updatedItems[existingCartItemIndex] = updatedItem;
       }
-      state.items = updatedItems;
+      state.totalAmount = state.totalAmount - existingItem.price; // since you can only remove one item at a time
     },
-    clearCart(state, action) {
+    clearCart(state) {
       state.items = [];
     },
   },
