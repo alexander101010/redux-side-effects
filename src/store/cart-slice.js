@@ -3,12 +3,17 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialStateCart = {
   items: [],
   totalAmount: 0,
+  changed: false,
 };
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState: initialStateCart,
   reducers: {
+    replaceCart(state, action) {
+      state.totalQuantity = action.payload.totalQuantity;
+      state.items = action.payload.items;
+    },
     addItemToCart(state, action) {
       const newItem = action.payload;
       // check to see if item exists in cart already
@@ -27,6 +32,7 @@ const cartSlice = createSlice({
         existingItem.totalPrice = existingItem.totalPrice + newItem.price;
         state.totalAmount = state.totalAmount + newItem.price;
       }
+      state.changed = true;
     },
 
     removeItemFromCart(state, action) {
@@ -42,6 +48,7 @@ const cartSlice = createSlice({
           totalPrice: existingItem.totalPrice - existingItem.price,
         };
       }
+      state.changed = true;
       state.totalAmount = state.totalAmount - existingItem.price; // since you can only remove one item at a time
     },
     clearCart(state) {
